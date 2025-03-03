@@ -3,14 +3,14 @@ import { createServer } from "http";
 import { join } from "path";
 import cors from 'cors';
 import bodyParser from "body-parser";
-import countRoutes from './api/countRoutes.js'; // Actualizado a la carpeta api
-import opRoutes from './api/opRoutes.js'; // Actualizado a la carpeta api
-import samplingRoutes from './api/samplingRoutes.js'; // Actualizado a la carpeta api
-import loginRoutes from './api/loginRoutes.js'; // Actualizado a la carpeta api
-import userRoutes from './api/userRoutes.js'; // Actualizado a la carpeta api
+import countRoutes from './api/countRoutes.js';
+import opRoutes from './api/opRoutes.js';
+import samplingRoutes from './api/samplingRoutes.js';
+import loginRoutes from './api/loginRoutes.js';
+import userRoutes from './api/userRoutes.js';
 import { serialController } from './controllers/serialController.js';
-import updateRoutes from './api/updateRoutes.js'; // Actualizado a la carpeta api
-import inventoryRoutes from './api/inventoryRoutes.js'; // Actualizado a la carpeta api
+import updateRoutes from './api/updateRoutes.js';
+import inventoryRoutes from './api/inventoryRoutes.js';
 import { Server } from "socket.io";
 import { fileURLToPath } from 'url';
 import path from "path";
@@ -29,16 +29,26 @@ const appServer = createServer(app);
 
 // Habilitar CORS en Express
 const corsOptions = {
-  origin: 'http://localhost:3000', // Cambia esto si usas otro dominio o puerto en el frontend
-  methods: ['GET', 'POST'],
+  origin: [
+    'http://localhost:3000', // Para desarrollo local
+    'https://scsmx.vercel.app', // Para producción en Vercel
+    'http://siaumex-001-site2.mtempurl.com', // Para producción en smarterASP.net
+  ],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Permite todos los métodos necesarios
+  credentials: true, // Permite el envío de cookies y encabezados de autenticación
 };
 app.use(cors(corsOptions));
 
 // Crear instancia de Socket.IO con CORS habilitado
 const io = new Server(appServer, {
   cors: {
-    origin: 'http://localhost:3000',
-    methods: ['GET', 'POST']
+    origin: [
+      'http://localhost:3000', // Para desarrollo local
+      'https://scsmx.vercel.app', // Para producción en Vercel
+      'http://siaumex-001-site2.mtempurl.com', // Para producción en smarterASP.net
+    ],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    credentials: true,
   }
 });
 
