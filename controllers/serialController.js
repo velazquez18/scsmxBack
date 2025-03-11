@@ -2,7 +2,7 @@ import { SerialPort } from "serialport";
 
 export const serialController = (io) => {
   const port = new SerialPort({
-    path: "COM5",
+    path: "COM1",
     baudRate: 9600,
   });
 
