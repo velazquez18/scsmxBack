@@ -34,7 +34,9 @@ router.get("/getDataById", async (req, res) => {
       .query(query);
 
     if (result.recordset.length > 0) {
-      res.status(200).json(result.recordset[0]);
+      const data = result.recordset[0];
+      console.log("Datos obtenidos:", data); // Depuración
+      res.status(200).json(data);
     } else {
       res.status(404).json({ message: "Producto no encontrado" });
     }
