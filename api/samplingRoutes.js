@@ -1,5 +1,5 @@
-import express from 'express';
-import { getPool, sql } from '../dbConnection.js'; // Asegúrate de importar 'sql' aquí
+import express from "express";
+import { getPool, sql } from "../dbConnection.js"; // Asegúrate de importar 'sql' aquí
 
 const router = express.Router();
 
