@@ -67,13 +67,7 @@ router.get("/getDataByQr", async (req, res) => {
 
     if (result.recordset.length > 0) {
       const data = result.recordset[0];
-
-      // Si la imagen es un campo binario, la codificamos en base64
-      if (data.Imagen) {
-        const base64Image = Buffer.from(data.Imagen).toString("base64");
-        data.Imagen = `data:image/jpeg;base64,${base64Image}`;
-      }
-
+      console.log("URL de la imagen:", data.Imagen);
       res.json(data); // Responder con los datos encontrados
     } else {
       res.status(404).json({ error: "Datos no encontrados" }); // Si no se encuentran datos
