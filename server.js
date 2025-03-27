@@ -3,80 +3,82 @@ import { createServer } from "http";
 import { join } from "path";
 import cors from 'cors';
 import bodyParser from "body-parser";
-import countRoutes from './api/countRoutes.js';
-import opRoutes from './api/opRoutes.js';
-import samplingRoutes from './api/samplingRoutes.js';
-import loginRoutes from './api/loginRoutes.js';
-import userRoutes from './api/userRoutes.js';
-import { serialController } from './controllers/serialController.js';
-import updateRoutes from './api/updateRoutes.js';
-import inventoryRoutes from './api/inventoryRoutes.js';
 import { Server } from "socket.io";
 import { fileURLToPath } from 'url';
-import path from "path";
+import path from 'path';
 import dotenv from 'dotenv';
-dotenv.config();
+import { serialController } from './controllers/serialController.js';
 
-// Obtener __dirname en un entorno ESModules
+// Configuración inicial
+dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const PORT = process.env.PORT || 3001;
 
 const app = express();
-const port = 3001;
-
-// Crear servidor HTTP
 const appServer = createServer(app);
 
-// Habilitar CORS en Express
+// Configuración mejorada de CORS
 const corsOptions = {
   origin: [
-    'http://localhost:3000', // Para desarrollo local
-    'https://scsmx.vercel.app', // Para producción en Vercel
-    'http://siaumex-001-site2.mtempurl.com', // Para producción en smarterASP.net
+    'http://localhost:3000',
+    'https://scsmx.vercel.app',
+    'http://siaumex-001-site2.mtempurl.com'
   ],
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Permite todos los métodos necesarios
-  credentials: true, // Permite el envío de cookies y encabezados de autenticación
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  credentials: true
 };
+
 app.use(cors(corsOptions));
-
-// Crear instancia de Socket.IO con CORS habilitado
-const io = new Server(appServer, {
-  cors: {
-    origin: [
-      'http://localhost:3000', // Para desarrollo local
-      'https://scsmx.vercel.app', // Para producción en Vercel
-      'http://siaumex-001-site2.mtempurl.com', // Para producción en smarterASP.net
-    ],
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    credentials: true,
-  }
-});
-
-// Usar middleware y body-parser
 app.use(express.json());
 app.use(bodyParser.json());
 
-// Usar rutas existentes
-app.use('/api', countRoutes);
-app.use('/api', samplingRoutes);
-app.use('/api', loginRoutes);
-app.use('/api', userRoutes);
-app.use('/api', opRoutes);
-app.use('/api', updateRoutes);
-app.use('/api', inventoryRoutes);
+// Socket.IO con reconexión mejorada
+const io = new Server(appServer, {
+  cors: corsOptions,
+  connectionStateRecovery: {
+    maxDisconnectionDuration: 2 * 60 * 1000 // 2 minutos
+  },
+  pingInterval: 10000,
+  pingTimeout: 5000
+});
 
-// Inicializar el controlador del puerto serial con socket.io
+// Inicializa el controlador serial
 serialController(io);
 
-// Servir archivos estáticos desde la carpeta build de frontend
-app.use(express.static(join(__dirname, '..', 'build')));
+// Rutas API (ajusta según tus imports)
+const routes = [
+  'countRoutes', 'samplingRoutes', 'loginRoutes',
+  'userRoutes', 'opRoutes', 'updateRoutes', 'inventoryRoutes'
+];
 
-// Ruta para servir el archivo HTML principal
-app.get('/*', (req, res) => {  // Ajuste para capturar cualquier ruta no gestionada por la API
+await Promise.all(routes.map(async (route) => {
+  const module = await import(`./api/${route}.js`);
+  app.use('/api', module.default);
+}));
+
+// Servir frontend
+app.use(express.static(join(__dirname, '..', 'build')));
+app.get('*', (req, res) => {
   res.sendFile(join(__dirname, '..', 'build', 'index.html'));
 });
 
-// Iniciar el servidor
-appServer.listen(port, () => {
-  console.log(`Servidor backend corriendo en http://localhost:${port}`);
+// Inicia servidor con LocalTunnel en producción
+appServer.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 Servidor en puerto ${PORT}`);
+  
+  if (process.env.NODE_ENV === 'production') {
+    const { exec } = require('child_process');
+    exec(`lt --port ${PORT} --subdomain scsmx-bascula`, (err, stdout) => {
+      if (err) return console.error('❌ LocalTunnel error:', err);
+      const url = stdout.match(/https:\/\/[^\s]+/)?.[0];
+      if (url) console.log(`🌐 URL pública: ${url}`);
+    });
+  }
+});
+
+// Manejo de cierre limpio
+process.on('SIGINT', () => {
+  console.log('\n🛑 Deteniendo servidor...');
+  appServer.close(() => process.exit(0));
 });

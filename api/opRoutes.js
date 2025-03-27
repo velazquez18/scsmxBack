@@ -20,14 +20,18 @@ router.get("/getOrdenProduccion", async (req, res) => {
     `;
 
     // Obtener la conexión del pool
-    const pool = await getPool(); // Llamada a getPool() directamente
-
-    // Ejecutar la consulta
-    const result = await pool.request().query(query); // Ejecutar la consulta
+    const pool = await getPool();
+    const result = await pool.request().query(query);
 
     if (result.recordset.length > 0) {
-      // Responder con los datos encontrados
-      res.json(result.recordset);
+      // Formatear las fechas antes de enviarlas al frontend
+      const formattedData = result.recordset.map((row) => ({
+        ...row,
+        Fecha: new Date(row.Fecha).toISOString().replace(".000Z", ""), // Convertir a ISO y eliminar .000Z
+      }));
+
+      console.log("Datos formateados:", formattedData); // Verifica que las fechas estén bien
+      res.json(formattedData);
     } else {
       res.status(404).json({ error: "Datos no encontrados" }); // Si no se encuentran datos
     }
