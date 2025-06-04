@@ -42,7 +42,7 @@ const routes = [
 
 await Promise.all(
   routes.map(async (route) => {
-    const module = await import(`./scsmx-api/${route}.js`);
+    const module = await import(`./api/${route}.js`);
     app.use("/scsmx-api", module.default);
   })
 );
