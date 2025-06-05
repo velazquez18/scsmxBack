@@ -51,8 +51,7 @@ app.get("*", (req, res) => {
   res.sendFile(join(__dirname, "..", "build", "index.html"));
 });
 
-// Inicia servidor con LocalTunnel en producción
-appServer.listen(PORT, "0.0.0.0", () => {
+app.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 Servidor en puerto ${PORT}`);
 
   if (process.env.NODE_ENV === "production") {
