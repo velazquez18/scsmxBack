@@ -58,11 +58,12 @@ appServer.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 Servidor en puerto ${PORT}`);
 
   if (process.env.NODE_ENV === "production") {
-    const { exec } = require("child_process");
-    exec(`lt --port ${PORT} --subdomain scsmx-bascula`, (err, stdout) => {
-      if (err) return console.error("❌ LocalTunnel error:", err);
-      const url = stdout.match(/https:\/\/[^\s]+/)?.[0];
-      if (url) console.log(`🌐 URL pública: ${url}`);
+    import("child_process").then(({ exec }) => {
+      exec(`lt --port ${PORT} --subdomain scsmx-bascula`, (err, stdout) => {
+        if (err) return console.error("❌ LocalTunnel error:", err);
+        const url = stdout.match(/https:\/\/[^\s]+/)?.[0];
+        if (url) console.log(`🌐 URL pública: ${url}`);
+      });
     });
   }
 });
