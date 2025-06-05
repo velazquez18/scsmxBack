@@ -1,4 +1,4 @@
-import { getPool, sql } from '../dbConnection.js';
+const { getPool, sql } = require('../dbConnection');
 
 const updateData = async (req, res) => {
   const { IdProd, pesoxPieza } = req.body;
@@ -38,4 +38,4 @@ const updateData = async (req, res) => {
   }
 };
 
-export { updateData };
+module.exports = { updateData };

@@ -1,5 +1,5 @@
-import express from "express";
-import { getPool, sql } from "../dbConnection.js"; // Asegúrate de importar 'sql' aquí
+const express = require("express");
+const { getPool, sql } = require("../dbConnection");
 
 const router = express.Router();
 
@@ -30,12 +30,12 @@ router.get("/getDataById", async (req, res) => {
 
     const result = await pool
       .request()
-      .input("IdProd", sql.NVarChar, id) // IdProd como parámetro
+      .input("IdProd", sql.NVarChar, id)
       .query(query);
 
     if (result.recordset.length > 0) {
       const data = result.recordset[0];
-      console.log("Datos obtenidos:", data); // Depuración
+      console.log("Datos obtenidos:", data);
       res.status(200).json(data);
     } else {
       res.status(404).json({ message: "Producto no encontrado" });
@@ -46,4 +46,4 @@ router.get("/getDataById", async (req, res) => {
   }
 });
 
-export default router;
+module.exports = router;

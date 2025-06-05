@@ -1,5 +1,5 @@
-import express from "express";
-import { getPool, sql } from "../dbConnection.js";
+const express = require("express");
+const { getPool, sql } = require("../dbConnection");
 
 const router = express.Router();
 
@@ -22,9 +22,8 @@ router.post("/registrarInventario", async (req, res) => {
     Fecha,
   } = req.body;
 
-  console.log("Datos recibidos en el backend:", req.body); // Depuración
+  console.log("Datos recibidos en el backend:", req.body);
 
-  // Verificar que los campos requeridos no sean nulos
   if (!OP || !IdClie || !IdProd || !Pzas || !Lote || !Peso) {
     console.error("Faltan campos requeridos:", {
       OP,
@@ -42,21 +41,20 @@ router.post("/registrarInventario", async (req, res) => {
   try {
     const pool = await getPool();
 
-    // Obtener el último Folio y aumentarlo en 1
     const folioQuery = await pool.request().query(`
-  SELECT MAX(Folio) AS UltimoFolio FROM Inventario
-`);
+      SELECT MAX(Folio) AS UltimoFolio FROM Inventario
+    `);
+
     console.log(
       "Resultado de la consulta del último Folio:",
       folioQuery.recordset
-    ); // Depuración
+    );
 
     const ultimoFolio = folioQuery.recordset[0].UltimoFolio || 0;
     const nuevoFolio = ultimoFolio + 1;
 
-    console.log("Nuevo Folio generado:", nuevoFolio); // Depuración // Depuración
+    console.log("Nuevo Folio generado:", nuevoFolio);
 
-    // Insertar el nuevo registro
     const query = `
       INSERT INTO Inventario (
         Folio, OP, IdClie, IdProd, Var1, Var2, Var3, Emp, Pzas, PxP, Peso, Lote, IdEst, IdUsu, Fecha
@@ -84,7 +82,7 @@ router.post("/registrarInventario", async (req, res) => {
       .input("Fecha", sql.DateTime, Fecha)
       .query(query);
 
-    console.log("Registro insertado correctamente en la base de datos."); // Depuración
+    console.log("Registro insertado correctamente en la base de datos.");
     res.status(200).json({ message: "Registro exitoso." });
   } catch (error) {
     console.error("Error al registrar en inventario:", error);
@@ -92,4 +90,4 @@ router.post("/registrarInventario", async (req, res) => {
   }
 });
 
-export default router;
+module.exports = router;

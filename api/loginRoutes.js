@@ -1,6 +1,6 @@
 // backend/routes/loginRoutes.js
-import express from 'express';
-import { loginWithRFID } from '../controllers/loginController.js';
+const express = require('express');
+const { loginWithRFID } = require('../controllers/loginController');
 
 const router = express.Router();
 
@@ -8,4 +8,4 @@ const router = express.Router();
 router.post('/login', loginWithRFID);
 
 // Exportar las rutas
-export default router;
+module.exports = router;

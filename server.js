@@ -1,17 +1,16 @@
-import express from "express";
-import { createServer } from "http";
-import { join } from "path";
-import cors from "cors";
-import bodyParser from "body-parser";
-import { fileURLToPath } from "url";
-import path from "path";
-import dotenv from "dotenv";
-import { exec } from "child_process";
+const express = require("express");
+const { createServer } = require("http");
+const { join } = require("path");
+const cors = require("cors");
+const bodyParser = require("body-parser");
+const path = require("path");
+const dotenv = require("dotenv");
+const fs = require("fs");
 
 // Configuración inicial
 dotenv.config();
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __filename = __filename || require("url").fileURLToPath(import.meta.url); // Fallback en entornos mixtos
+const __dirname = __dirname || path.dirname(__filename);
 const PORT = process.env.PORT || 3001;
 
 const app = express();
@@ -41,12 +40,10 @@ const routes = [
   "inventoryRoutes",
 ];
 
-await Promise.all(
-  routes.map(async (route) => {
-    const module = await import(`./api/${route}.js`);
-    app.use("/scsmx-api", module.default);
-  })
-);
+routes.forEach((route) => {
+  const routeModule = require(`./api/${route}.js`);
+  app.use("/scsmx-api", routeModule);
+});
 
 // Servir frontend
 app.use(express.static(join(__dirname, "..", "build")));
@@ -59,6 +56,7 @@ appServer.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 Servidor en puerto ${PORT}`);
 
   if (process.env.NODE_ENV === "production") {
+    const { exec } = require("child_process");
     exec(`lt --port ${PORT} --subdomain scsmx-bascula`, (err, stdout) => {
       if (err) return console.error("❌ LocalTunnel error:", err);
       const url = stdout.match(/https:\/\/[^\s]+/)?.[0];

@@ -1,18 +1,16 @@
-import express from "express";
-import { getPool, sql } from "../dbConnection.js"; // Importar getPool y sql desde dbConnection.js
+const express = require("express");
+const { getPool, sql } = require("../dbConnection"); // Sin .js en CommonJS
 const router = express.Router();
 
 router.get("/getDataByQr", async (req, res) => {
-  const qr = req.query.qr; // El QR viene en la URL como parámetro
-  console.log("QR recibido:", qr); // Para depuración
+  const qr = req.query.qr;
+  console.log("QR recibido:", qr);
 
   try {
-    // Verificar que se recibió el parámetro QR
     if (!qr) {
       return res.status(400).json({ error: "Parámetro QR es requerido" });
     }
 
-    // Descomponer los valores del QR
     const qrValues = qr.split("|");
     if (qrValues.length !== 6) {
       return res.status(400).json({ error: "Formato de QR inválido" });
@@ -20,9 +18,8 @@ router.get("/getDataByQr", async (req, res) => {
 
     const [OP, IdClie, IdProd, Emp, Pzas, Lote] = qrValues;
 
-    // Definir la consulta SQL
     const query = `
-  SELECT
+      SELECT
         OP.IdProd AS IdProd,
         OP.IdClie AS IdClie,
         Clientes.Nombre AS nombreCliente,
@@ -49,10 +46,8 @@ router.get("/getDataByQr", async (req, res) => {
         AND OP.Lote = @Lote;
     `;
 
-    // Obtener la conexión del pool
     const pool = await getPool();
 
-    // Ejecutar la consulta
     const result = await pool
       .request()
       .input("OP", sql.NVarChar, OP)
@@ -63,22 +58,22 @@ router.get("/getDataByQr", async (req, res) => {
       .input("Lote", sql.NVarChar, Lote)
       .query(query);
 
-    console.log("Resultado de la consulta:", result.recordset); // Depuración
+    console.log("Resultado de la consulta:", result.recordset);
 
     if (result.recordset.length > 0) {
       const data = result.recordset[0];
-      console.log("Datos obtenidos:", data); // Depuración
+      console.log("Datos obtenidos:", data);
       res.status(200).json(data);
     } else {
-      res.status(404).json({ error: "Datos no encontrados" }); // Si no se encuentran datos
+      res.status(404).json({ error: "Datos no encontrados" });
     }
   } catch (error) {
-    console.error("Error al procesar QR:", error); // Imprimir el error en consola
-    res.status(500).json({ error: "Error en el servidor" }); // Responder con un error 500
+    console.error("Error al procesar QR:", error);
+    res.status(500).json({ error: "Error en el servidor" });
   }
 });
 
-export default router;
+module.exports = router;
 
 // // Ruta para obtener los datos de la tabla OP
 // router.get("/op", async (req, res) => {
