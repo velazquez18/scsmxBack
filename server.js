@@ -6,6 +6,7 @@ import bodyParser from "body-parser";
 import { fileURLToPath } from "url";
 import path from "path";
 import dotenv from "dotenv";
+import { exec } from "child_process";
 
 // Configuración inicial
 dotenv.config();
@@ -58,7 +59,6 @@ appServer.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 Servidor en puerto ${PORT}`);
 
   if (process.env.NODE_ENV === "production") {
-    const { exec } = require("child_process");
     exec(`lt --port ${PORT} --subdomain scsmx-bascula`, (err, stdout) => {
       if (err) return console.error("❌ LocalTunnel error:", err);
       const url = stdout.match(/https:\/\/[^\s]+/)?.[0];
