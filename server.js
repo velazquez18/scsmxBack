@@ -5,15 +5,13 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 const path = require("path");
 const dotenv = require("dotenv");
-const fs = require("fs");
 
 // Configuración inicial
 dotenv.config();
-const __filename = __filename || require("url").fileURLToPath(import.meta.url); // Fallback en entornos mixtos
-const __dirname = __dirname || path.dirname(__filename);
 const PORT = process.env.PORT || 3001;
 
 const app = express();
+const appServer = createServer(app);
 
 // Configuración mejorada de CORS
 const corsOptions = {
@@ -28,7 +26,7 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(bodyParser.json());
 
-// Rutas API (ajusta según tus imports)
+// Rutas API (ajusta según requires)
 const routes = [
   "countRoutes",
   "samplingRoutes",
@@ -40,8 +38,8 @@ const routes = [
 ];
 
 routes.forEach((route) => {
-  const routeModule = require(`./api/${route}.js`);
-  app.use("/scsmx-api", routeModule);
+  const module = require(`./api/${route}.js`);
+  app.use("/scsmx-api", module);
 });
 
 // Servir frontend
@@ -50,7 +48,8 @@ app.get("*", (req, res) => {
   res.sendFile(join(__dirname, "..", "build", "index.html"));
 });
 
-app.listen(PORT, "0.0.0.0", () => {
+// Inicia servidor con LocalTunnel en producción
+appServer.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 Servidor en puerto ${PORT}`);
 
   if (process.env.NODE_ENV === "production") {
@@ -66,5 +65,5 @@ app.listen(PORT, "0.0.0.0", () => {
 // Manejo de cierre limpio
 process.on("SIGINT", () => {
   console.log("\n🛑 Deteniendo servidor...");
-  app.close(() => process.exit(0));
+  appServer.close(() => process.exit(0));
 });
