@@ -14,7 +14,6 @@ const __dirname = __dirname || path.dirname(__filename);
 const PORT = process.env.PORT || 3001;
 
 const app = express();
-const appServer = createServer(app);
 
 // Configuración mejorada de CORS
 const corsOptions = {
@@ -67,5 +66,5 @@ app.listen(PORT, "0.0.0.0", () => {
 // Manejo de cierre limpio
 process.on("SIGINT", () => {
   console.log("\n🛑 Deteniendo servidor...");
-  appServer.close(() => process.exit(0));
+  app.close(() => process.exit(0));
 });
